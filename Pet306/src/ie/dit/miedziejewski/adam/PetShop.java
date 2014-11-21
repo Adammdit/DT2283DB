@@ -134,19 +134,35 @@ public class PetShop {
 		PreparedStatement preparedStatement = null;
 		
 		try {
+			Statement stmt = getDBConnection().createStatement ();
+	  	    ResultSet rset = stmt.executeQuery("select sale_id from dit.sale");
+	  	    String saleNo = "";
+	  	    Integer min = 0;
+	  	    while (rset.next()) {
+	  	    	saleNo = rset.getString(1);
+	  	    	saleNo = saleNo.substring(2);
+	  	    	int temp = Integer.parseInt(saleNo);
+	  	    	if(temp > min) {
+	  	    		min = temp;
+	  	    	}
+	  	    }
+		  	min++;
+		  	saleNo = "SA" + min;
+		  	
 			dbConnection = getDBConnection();			
-			CallableStatement preparedStatement1 = dbConnection.prepareCall ("{call dit.make_sale(?,?,?,?,?,?)}");
+			CallableStatement preparedStatement1 = dbConnection.prepareCall ("{call dit.make_sale(?,?,?,?,?,?,?)}");
 			preparedStatement1.setString(1,staffNo);
 			preparedStatement1.setString(2,cNo);
 			preparedStatement1.setString(3,pNo);
-			preparedStatement1.setInt(4,qty);
-			preparedStatement1.registerOutParameter(5,Types.VARCHAR);
-			preparedStatement1.registerOutParameter(6,Types.NUMERIC); 
+			preparedStatement1.setString(4,saleNo);
+			preparedStatement1.setInt(5,qty);
+			preparedStatement1.registerOutParameter(6,Types.VARCHAR);
+			preparedStatement1.registerOutParameter(7,Types.NUMERIC); 
 			preparedStatement1.executeUpdate();
-			
+			//System.out.println(saleNo);
 			System.out.println("Name         Price");
-			Double sum = Double.parseDouble(preparedStatement1.getString(6)) * qty;
-	        System.out.println(preparedStatement1.getString(5)+" | "+preparedStatement1.getString(6)+" x "+qty+" = "+sum);
+			Double sum = Double.parseDouble(preparedStatement1.getString(7)) * qty;
+	        System.out.println(preparedStatement1.getString(6)+" | "+preparedStatement1.getString(7)+" x "+qty+" = "+sum);
  
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
