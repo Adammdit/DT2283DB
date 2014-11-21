@@ -34,6 +34,15 @@ public class PetShop {
 	  	    String cNo = bufferRead4.readLine();
 	  	    findCustomer(cNo);
 	  	    
+	  	    System.out.println("Enter product id.");
+	  	    BufferedReader bufferRead5 = new BufferedReader(new InputStreamReader(System.in));
+	  	    String pId = bufferRead5.readLine();
+	  	    
+	  	    System.out.println("Enter quantity.");
+	  	    BufferedReader bufferRead6 = new BufferedReader(new InputStreamReader(System.in));
+	  	    Integer qty = Integer.parseInt(bufferRead6.readLine());
+	  	    makeSale("S101", cNo, pId, qty);
+	  	    
 	    }
 	    else if(s.equals("n")) {
 	    	System.out.println("Do you want to register [y/n]?");
@@ -120,6 +129,37 @@ public class PetShop {
 		}
     }
     
+    private static void makeSale(String staffNo, String cNo, String pNo, Integer qty) throws SQLException {   	 
+    	Connection dbConnection = null;
+		PreparedStatement preparedStatement = null;
+		
+		try {
+			dbConnection = getDBConnection();			
+			CallableStatement preparedStatement1 = dbConnection.prepareCall ("{call dit.make_sale(?,?,?,?,?,?)}");
+			preparedStatement1.setString(1,staffNo);
+			preparedStatement1.setString(2,cNo);
+			preparedStatement1.setString(3,pNo);
+			preparedStatement1.setInt(4,qty);
+			preparedStatement1.registerOutParameter(5,Types.VARCHAR);
+			preparedStatement1.registerOutParameter(6,Types.NUMERIC); 
+			preparedStatement1.executeUpdate();
+			
+			System.out.println("Name         Price");
+			Double sum = Double.parseDouble(preparedStatement1.getString(6)) * qty;
+	        System.out.println(preparedStatement1.getString(5)+" | "+preparedStatement1.getString(6)+" x "+qty+" = "+sum);
+ 
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		} finally {
+			if (preparedStatement != null) {
+				preparedStatement.close();
+			}
+			if (dbConnection != null) {
+				dbConnection.close();
+			}
+		}
+    }
+    
     private static Connection getDBConnection() {   	 
 		Connection dbConnection = null;
 		try {
@@ -146,5 +186,6 @@ public class PetShop {
 		}
 		return dbConnection;
     }
+    
 }
 
